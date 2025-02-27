@@ -4,101 +4,160 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Каталог товаров</title>
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+  <!-- Новый шрифт -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Сброс стилей */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle, #2c3e50, #000);
+      color: #ecf0f1;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0;
+      border-bottom: 2px solid #34495e;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      font-size: 3em;
+      letter-spacing: 2px;
+    }
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    #catalog {
+      display: grid;
+      gap: 40px;
+    }
+    .category-group {
+      background: rgba(44, 62, 80, 0.8);
+      border-radius: 12px;
+      padding: 20px;
+      animation: groupFadeIn 1s ease-out forwards;
+      transform: scale(0.95);
+    }
+    .category-title {
+      font-size: 2.2em;
+      margin-bottom: 20px;
+      border-left: 5px solid #e74c3c;
+      padding-left: 15px;
+      opacity: 0;
+      animation: titleSlide 0.8s forwards;
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      background: #34495e;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+      transition: transform 0.3s, box-shadow 0.3s;
+      opacity: 0;
+      animation: cardAppear 0.8s forwards;
+    }
+    .product-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.7);
+    }
+    .product-name {
+      font-size: 1.6em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #ecf0f1;
+    }
+    .product-price {
+      font-size: 1.4em;
+      color: #27ae60;
+      margin-bottom: 10px;
+    }
+    .product-description {
+      font-size: 1em;
+      color: #bdc3c7;
+    }
+    /* Анимации */
+    @keyframes groupFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes titleSlide {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes cardAppear {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-  <h1>Каталог товаров</h1>
-  <div id="catalog"></div>
+  <header>
+    <h1>Каталог товаров</h1>
+  </header>
+  <main>
+    <div id="catalog"></div>
+  </main>
 
   <script>
-    function createElement(tag, className, text) {
-      const el = document.createElement(tag);
-      if (className) el.className = className;
-      if (text) el.textContent = text;
-      return el;
-    }
-
-    function formatPrice(price) {
-      return Number(price).toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-    }
-
-    function showError(message) {
-      const errorEl = createElement('div', 'error-message', message);
-      document.getElementById('catalog').appendChild(errorEl);
-    }
-
     fetch('/api/products')
-      .then(response => {
-        if (!response.ok) throw new Error('Ошибка загрузки данных');
-        return response.json();
-      })
+      .then(response => response.json())
       .then(products => {
-        if (!products.length) {
-          showError('Товары не найдены');
-          return;
-        }
-
         const catalogDiv = document.getElementById('catalog');
+        // Группировка товаров по категориям
         const categoriesMap = {};
-
-        // Группировка по категориям
         products.forEach(product => {
-          const categories = product.categories?.length 
-            ? product.categories 
-            : ['Без категории'];
-          
-          categories.forEach(category => {
+          product.categories.forEach(category => {
             if (!categoriesMap[category]) {
               categoriesMap[category] = [];
             }
             categoriesMap[category].push(product);
           });
         });
+        // Вывод товаров по категориям
+        for (const category in categoriesMap) {
+          const categoryGroup = document.createElement('div');
+          categoryGroup.className = 'category-group';
 
-        // Сортировка категорий
-        const sortedCategories = Object.keys(categoriesMap).sort();
-
-        sortedCategories.forEach(category => {
-          const categoryGroup = createElement('div', 'category-group');
-          
-          const categoryTitle = createElement('h2', 'category-title', category);
+          const categoryTitle = document.createElement('h2');
+          categoryTitle.className = 'category-title';
+          categoryTitle.textContent = category;
           categoryGroup.appendChild(categoryTitle);
 
-          const productGrid = createElement('div', 'product-grid');
+          const productGrid = document.createElement('div');
+          productGrid.className = 'product-grid';
 
-          categoriesMap[category]
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .forEach((product, index) => {
-              const card = createElement('article', 'product-card');
-              card.style.animationDelay = `${index * 0.05}s`;
 
-              if (product.image) {
-                const img = createElement('img', 'product-image');
-                img.src = product.image;
-                img.alt = product.name;
-                card.appendChild(img);
-              }
-
-              const name = createElement('h3', 'product-name', product.name);
-              const price = createElement('div', 'product-price', formatPrice(product.price));
-              const desc = createElement('p', 'product-description', product.description);
-
-              card.append(name, price, desc);
-              productGrid.appendChild(card);
-            });
+          categoriesMap[category].forEach((product, index) => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            // Задержка анимации для карточек
+            card.style.animationDelay = `${index * 0.15}s`;
+            card.innerHTML = `
+              <div class="product-name">${product.name}</div>
+              <div class="product-price">$${product.price}</div>
+              <div class="product-description">${product.description}</div>
+            `;
+            productGrid.appendChild(card);
+          });
 
           categoryGroup.appendChild(productGrid);
           catalogDiv.appendChild(categoryGroup);
-        });
+        }
       })
       .catch(error => {
-        console.error('Ошибка:', error);
-        showError('Не удалось загрузить каталог. Пожалуйста, попробуйте позже.');
+        console.error('Ошибка получения товаров:', error);
       });
   </script>
 </body>

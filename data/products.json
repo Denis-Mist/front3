@@ -1,14 +1,5 @@
 [
   {
-    "id": 1,
-    "name": "New",
-    "price": 100,
-    "description": "Description for product A.",
-    "categories": [
-      "Category 1"
-    ]
-  },
-  {
     "id": 2,
     "name": "Product B",
     "price": 200,
@@ -39,7 +30,7 @@
   {
     "id": 5,
     "name": "Product E",
-    "price": 300,
+    "price": 3007834623,
     "description": "Description for product E.",
     "categories": [
       "Category 2"
@@ -52,6 +43,24 @@
     "description": "fsdkjahf",
     "categories": [
       "New"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "no",
+    "price": 4,
+    "description": "432",
+    "categories": [
+      "fds"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "new towar",
+    "price": 42347832423432424,
+    "description": "new",
+    "categories": [
+      "My categore new"
     ]
   }
 ]
