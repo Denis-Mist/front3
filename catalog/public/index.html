@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Каталог товаров</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <h1>Каталог товаров</h1>
+  <div id="catalog"></div>
+
+  <script>
+    function createElement(tag, className, text) {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (text) el.textContent = text;
+      return el;
+    }
+
+    function formatPrice(price) {
+      return Number(price).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function showError(message) {
+      const errorEl = createElement('div', 'error-message', message);
+      document.getElementById('catalog').appendChild(errorEl);
+    }
+
+    fetch('/api/products')
+      .then(response => {
+        if (!response.ok) throw new Error('Ошибка загрузки данных');
+        return response.json();
+      })
+      .then(products => {
+        if (!products.length) {
+          showError('Товары не найдены');
+          return;
+        }
+
+        const catalogDiv = document.getElementById('catalog');
+        const categoriesMap = {};
+
+        // Группировка по категориям
+        products.forEach(product => {
+          const categories = product.categories?.length 
+            ? product.categories 
+            : ['Без категории'];
+          
+          categories.forEach(category => {
+            if (!categoriesMap[category]) {
+              categoriesMap[category] = [];
+            }
+            categoriesMap[category].push(product);
+          });
+        });
+
+        // Сортировка категорий
+        const sortedCategories = Object.keys(categoriesMap).sort();
+
+        sortedCategories.forEach(category => {
+          const categoryGroup = createElement('div', 'category-group');
+          
+          const categoryTitle = createElement('h2', 'category-title', category);
+          categoryGroup.appendChild(categoryTitle);
+
+          const productGrid = createElement('div', 'product-grid');
+
+          categoriesMap[category]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .forEach((product, index) => {
+              const card = createElement('article', 'product-card');
+              card.style.animationDelay = `${index * 0.05}s`;
+
+              if (product.image) {
+                const img = createElement('img', 'product-image');
+                img.src = product.image;
+                img.alt = product.name;
+                card.appendChild(img);
+              }
+
+              const name = createElement('h3', 'product-name', product.name);
+              const price = createElement('div', 'product-price', formatPrice(product.price));
+              const desc = createElement('p', 'product-description', product.description);
+
+              card.append(name, price, desc);
+              productGrid.appendChild(card);
+            });
+
+          categoryGroup.appendChild(productGrid);
+          catalogDiv.appendChild(categoryGroup);
+        });
+      })
+      .catch(error => {
+        console.error('Ошибка:', error);
+        showError('Не удалось загрузить каталог. Пожалуйста, попробуйте позже.');
+      });
+  </script>
+</body>
+</html>
